@@ -25,6 +25,11 @@
         "semi": [
             "error",
             "always"
-        ]
+        ],
+        "no-console": "off",
+        "block-spacing": "error",
+        "brace-style": "error",
+        "space-before-function-paren": "error",
+        "space-before-blocks": "error"
     }
 }
