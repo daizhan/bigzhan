@@ -2,29 +2,33 @@
  * app.js
  */
 
-var express = require('express');
-var path = require('path');
-var favicon = require('serve-favicon');
-var cookieParser = require('cookie-parser');
-var bodyParser = require('body-parser');
+let express = require('express');
+let path = require('path');
+let favicon = require('serve-favicon');
+let cookieParser = require('cookie-parser');
+let bodyParser = require('body-parser');
 
-var configHelper = require('./config/config_helper');
+let CONSTANT = require('./config/const');
 
-var logger = require('./middleware/log');
-var accessLogger = require('./middleware/log_access');
+let configHelper = require('./config/config_helper');
 
-var index = require('./routes/index');
+let logger = require('./middleware/log');
+let accessLogger = require('./middleware/log_access');
 
-var app = express();
+let index = require('./routes/index');
+
+let app = express();
 
 app.set('trust proxy', 'loopback');
+
+// uncomment after placing your favicon in /public
+//app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
+
+app.use(express.static(path.join(__dirname, 'public')));
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
-
-// uncomment after placing your favicon in /public
-//app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
 
 // init config
 app.use(function (req, res, next) {
@@ -42,24 +46,23 @@ app.use(accessLogger);
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
-app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('*', index);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
-    var err = new Error('Not Found');
+    let err = new Error('Not Found');
     err.status = 404;
     next(err);
 });
 
 // error handler
 app.use(function (err, req, res, next) {
-    // set locals, only providing error in development
+    let isPrd = req.config.env.label === CONSTANT.env.label.prd;
+    res.locals.isPrd = isPrd;
     res.locals.message = err.message;
-    res.locals.error = req.app.get('env') === 'development' ? err : {};
+    res.locals.error = !isPrd ? err : {};
 
-    // render the error page
     res.status(err.status || 500);
     res.render('error');
 });
