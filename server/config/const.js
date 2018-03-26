@@ -3,6 +3,12 @@
  */
 
 module.exports = {
+    env: {
+        label: {
+            prd: 'production',
+            dev: 'development'
+        }
+    },
     log: {
         type: {
             file: 'file',

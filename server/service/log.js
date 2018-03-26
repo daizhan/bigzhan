@@ -20,11 +20,11 @@ const CUT_STYLE = {
 };
 
 function formatter (options) {
-    let lines = [`[ ${utils.time.format(new Date(), '%Y-%m-%d %H:%M:%S')} - ${options.level.toUpperCase()}]`];
+    let lines = [`[${utils.time.format(new Date(), '%Y-%m-%d %H:%M:%S')} - ${options.level.toUpperCase()}]`];
     if (options.message) {
         lines.push(options.message);
     }
-    if (options.meta) {
+    if (options.meta && Object.keys(options.meta).length) {
         lines.push(JSON.stringify(options.meta));
     }
     lines.push('--------------');
@@ -39,7 +39,7 @@ function checkConfig (config) {
         if (!config.logPath && !config.defaultFilename) { // 没有提供日志路径
             return false;
         }
-        if (config.cutStyle && ~!Object.keys(CUT_STYLE).indexOf(config.cutStyle)) { // 日志切割类型不对
+        if (config.cutStyle && !~Object.keys(CUT_STYLE).indexOf(config.cutStyle)) { // 日志切割类型不对
             return false;
         }
     }
@@ -52,6 +52,7 @@ function getConfig (config) {
         if (!config.logPath) {
             loggerConfig.logPath = path.dirname(__dirname);
         }
+        utils.filePath.createPath(loggerConfig.logPath);
         if (!config.cutStyle) {
             loggerConfig.cutStyle = CUT_STYLE.day;
         }
@@ -79,13 +80,15 @@ function Logger (config) {
     config = getConfig(config);
     if (config.type === TYPES.console) {
         transports.push(new (winston.transports.Console)({
+            name: CONSTANT.log.type.console,
             formatter: formatter
         }));
     } else {
         transports.push(new (winston.transports.File)({
+            name: CONSTANT.log.type.file,
             json: false,
             formatter: formatter,
-            filename: path.join(config.logPath + getLogFileName(config.cutStyle))
+            filename: path.join(config.logPath, getLogFileName(config.cutStyle))
         }));
     }
     return new (winston.Logger)({

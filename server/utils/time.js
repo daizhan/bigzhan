@@ -5,29 +5,42 @@
 let _ = require('underscore');
 
 module.exports = {
+    insertZero: function (num, count) {
+        num = '' + (parseInt(num) || 0);
+        count = count || 0;
+        if (count <= 0 || count <= num.length) return num;
+        return new Array(count + 1 - num.length).join('0') + num;
+    },
     /**
      * 时间格式化
      * @param { Date or timestamp } time
      * @param { String } format 
      */
-    format (time, format) {
-        if (!(time instanceof Date)) {
-            time = new Date(time);
+    format: function (date, format, timeType = '') {
+        let allowedType = ['UTC'];
+        if (!~allowedType.indexOf(timeType)) {
+            timeType = '';
         }
-        let preDefinedFormat = {
-            '%Y': 'getFullYear',
-            '%m': 'getMonth',
-            '%d': 'getDate',
-            '%H': 'getHours',
-            '%M': 'getMinutes',
-            '%S': 'getSeconds',
+        var placehodler = {
+            '%Y': `get${timeType}FullYear`,
+            '%m': `get${timeType}Month`,
+            '%d': `get${timeType}Date`,
+            '%H': `get${timeType}Hours`,
+            '%M': `get${timeType}Minutes`,
+            '%S': `get${timeType}Seconds`
         };
-        _.each(preDefinedFormat, (func, key) => {
-            if (key === '%m') {  // 月份从0开始，需要+1
-                format = format.replace(key, time[func]() + 1);
+        _.each(placehodler, function (value, key) {
+            if (key == '%Y') {
+                value = date[value]();
             } else {
-                format = format.replace(key, time[func]());
+                if (key == '%m') {
+                    value = this.insertZero(date[value]() + 1, 2);
+                } else {
+                    value = this.insertZero(date[value](), 2);
+                }
             }
-        });
+            format = format.replace(key, value);
+        }, this);
+        return format;
     }
 };
