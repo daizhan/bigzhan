@@ -15,6 +15,8 @@ let configHelper = require('./config/config_helper');
 let logger = require('./middleware/log');
 let accessLogger = require('./middleware/log_access');
 
+let errorHandler = require('./middleware/error');
+
 let index = require('./routes/index');
 
 let app = express();
@@ -51,20 +53,14 @@ app.use('*', index);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
-    let err = new Error('Not Found');
+    let tips = 'Not Found';
+    let err = new Error(tips);
     err.status = 404;
+    err.tips = tips;
     next(err);
 });
 
 // error handler
-app.use(function (err, req, res, next) {
-    let isPrd = req.config.env.label === CONSTANT.env.label.prd;
-    res.locals.isPrd = isPrd;
-    res.locals.message = err.message;
-    res.locals.error = !isPrd ? err : {};
-
-    res.status(err.status || 500);
-    res.render('error');
-});
+app.use(errorHandler);
 
 module.exports = app;

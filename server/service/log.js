@@ -5,6 +5,7 @@
 let winston = require('winston');
 let _ = require('underscore');
 let path = require('path');
+let os = require('os');
 
 const CONSTANT = require('../config/const');
 let utils = require('../utils/index');
@@ -19,16 +20,23 @@ const CUT_STYLE = {
     hour: CONSTANT.log.cutStyle.hour
 };
 
-function formatter (options) {
-    let lines = [`[${utils.time.format(new Date(), '%Y-%m-%d %H:%M:%S')} - ${options.level.toUpperCase()}]`];
+function formatter (data, options) {
+    let lines = [];
+    let title = `[${utils.time.format(new Date(), '%Y-%m-%d %H:%M:%S')} - ${options.level.toUpperCase()}]`;
+    if (options.req) {
+        title += ` - ${options.req.path || ''}`;
+    }
+    lines.push(title);
     if (options.message) {
         lines.push(options.message);
     }
     if (options.meta && Object.keys(options.meta).length) {
-        lines.push(JSON.stringify(options.meta));
+        _.each(options.meta, function (value, key) {
+            lines.push(`${key}: ${JSON.stringify(value)}`);
+        });
     }
     lines.push('--------------');
-    return lines.join('\n');
+    return lines.join(os.EOL);
 }
 
 function checkConfig (config) {
@@ -71,7 +79,7 @@ function getLogFileName (type) {
     return utils.time.format(time, format + '.log');
 }
 
-function Logger (config) {
+function Logger (config, options) {
     let transports = [];
     let passed = checkConfig(config);
     if (!passed) {
@@ -81,13 +89,17 @@ function Logger (config) {
     if (config.type === TYPES.console) {
         transports.push(new (winston.transports.Console)({
             name: CONSTANT.log.type.console,
-            formatter: formatter
+            formatter: (data) => {
+                return formatter(data, options);
+            }
         }));
     } else {
         transports.push(new (winston.transports.File)({
             name: CONSTANT.log.type.file,
             json: false,
-            formatter: formatter,
+            formatter: (data) => {
+                return formatter(data, options);
+            },
             filename: path.join(config.logPath, getLogFileName(config.cutStyle))
         }));
     }

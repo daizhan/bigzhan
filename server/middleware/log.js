@@ -6,11 +6,16 @@ let loggerSerive = require('../service/log');
 let CONSTANT = require('../config/const');
 
 module.exports = function (req, res, next) {
-    let logger = loggerSerive(req.config.log);
+    function getRequestInfo (req) {
+        return {req: req};
+    }
+
+    let requestInfo = getRequestInfo(req);
+    let logger = loggerSerive(req.config.log, requestInfo);
     if (logger) {
         req.logger = logger;
     } else {
-        req.logger = loggerSerive({ type: CONSTANT.log.type.console });
+        req.logger = loggerSerive({ type: CONSTANT.log.type.console }, requestInfo);
     }
     next();
 };
