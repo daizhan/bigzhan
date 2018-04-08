@@ -18,7 +18,7 @@ module.exports = function (err, req, res, next) {
     res.locals.error = isPrd ? {} : err;
 
     req.logger.error(
-        status + os.EOL + err.message + os.EOL + err.stack
+        status + ' - ' + err.stack
     );
 
     res.status(status);

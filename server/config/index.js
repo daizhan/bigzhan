@@ -20,6 +20,9 @@ let config = {
     development: {
         env: {
             label: CONSTANT.env.label.dev
+        },
+        log: {
+            type: CONSTANT.log.type.console
         }
     }
 };

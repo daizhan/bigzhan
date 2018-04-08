@@ -22,16 +22,16 @@ const CUT_STYLE = {
 
 function formatter (data, options) {
     let lines = [];
-    let title = `[${utils.time.format(new Date(), '%Y-%m-%d %H:%M:%S')} - ${options.level.toUpperCase()}]`;
+    let title = `[${utils.time.format(new Date(), '%Y-%m-%d %H:%M:%S')} - ${data.level.toUpperCase()}]`;
     if (options.req) {
         title += ` - ${options.req.path || ''}`;
     }
     lines.push(title);
-    if (options.message) {
-        lines.push(options.message);
+    if (data.message) {
+        lines.push(data.message);
     }
-    if (options.meta && Object.keys(options.meta).length) {
-        _.each(options.meta, function (value, key) {
+    if (data.meta && Object.keys(data.meta).length) {
+        _.each(data.meta, function (value, key) {
             lines.push(`${key}: ${JSON.stringify(value)}`);
         });
     }

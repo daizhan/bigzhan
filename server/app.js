@@ -15,6 +15,8 @@ let configHelper = require('./config/config_helper');
 let logger = require('./middleware/log');
 let accessLogger = require('./middleware/log_access');
 
+let responseHelper = require('./middleware/response');
+
 let errorHandler = require('./middleware/error');
 
 let index = require('./routes/index');
@@ -44,6 +46,9 @@ app.use(logger);
 
 // init access logger
 app.use(accessLogger);
+
+// response middlerware
+app.use(responseHelper);
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
