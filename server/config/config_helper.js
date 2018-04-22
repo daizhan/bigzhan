@@ -3,9 +3,14 @@
  */
 
 let utils = require('../utils/index');
+let path = require('path');
 
 module.exports = {
     getConfig (configName, env) {
+        let configFile = path.join(__dirname, configName);
+        if (!utils.filePath.isFileExist(configFile)) {
+            return null;
+        }
         let config = require('./' + configName);
         let targetConfig = {};
         if (config.common) {

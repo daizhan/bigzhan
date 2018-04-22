@@ -10,11 +10,24 @@ let config = {
             type: CONSTANT.log.type.file,
             logPath: '/home/daizhan/data/bigzhan.com/logs',
             cutStyle: CONSTANT.log.cutStyle.day
+        },
+        cache: {
+            host: 'localhost',
+            port: 6379,
+            password: ''
+        },
+        session: {
+            name: 'sid',
+            secret: ''
         }
     },
     production: {
         env: {
             label: CONSTANT.env.label.prd
+        },
+        session: {
+            name: 'p_sid',
+            secret: ''
         }
     },
     development: {
@@ -23,6 +36,10 @@ let config = {
         },
         log: {
             type: CONSTANT.log.type.console
+        },
+        session: {
+            name: 'd_sid',
+            secret: ''
         }
     }
 };

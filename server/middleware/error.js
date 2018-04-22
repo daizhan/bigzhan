@@ -29,9 +29,9 @@ module.exports = function (err, req, res, next) {
         json: () => {
             if (isPrd) {
                 if (status === 404) {
-                    res.error(errCode.PAGE_NOT_FOUND);
+                    res.error(err.code || errCode.PAGE_NOT_FOUND);
                 } else {
-                    res.error(errCode.UNKNOWN_ERROR);
+                    res.error(err.code || errCode.UNKNOWN_ERROR);
                 }
             } else {
                 res.error(null, _.pick(err, 'message', 'stack'));

@@ -8,8 +8,6 @@ let favicon = require('serve-favicon');
 let cookieParser = require('cookie-parser');
 let bodyParser = require('body-parser');
 
-let CONSTANT = require('./config/const');
-
 let configHelper = require('./config/config_helper');
 
 let logger = require('./middleware/log');
@@ -18,6 +16,8 @@ let accessLogger = require('./middleware/log_access');
 let responseHelper = require('./middleware/response');
 
 let errorHandler = require('./middleware/error');
+
+let sessionHandler = require('./middleware/session');
 
 let index = require('./routes/index');
 
@@ -50,9 +50,16 @@ app.use(accessLogger);
 // response middlerware
 app.use(responseHelper);
 
+// 处理body
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
-app.use(cookieParser());
+
+// 处理cookie
+app.use(function (req, res, next) {
+    cookieParser(req.config.session.secret)(req, res, next);
+});
+
+app.use(sessionHandler());
 
 app.use('*', index);
 
