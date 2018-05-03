@@ -1,5 +1,3 @@
-import { CANCELLED } from 'dns';
-
 /**
  * cache servive
  */

@@ -8,8 +8,6 @@ let favicon = require('serve-favicon');
 let cookieParser = require('cookie-parser');
 let bodyParser = require('body-parser');
 
-let configHelper = require('./config/config_helper');
-
 let logger = require('./middleware/log');
 let accessLogger = require('./middleware/log_access');
 
@@ -21,12 +19,13 @@ let sessionHandler = require('./middleware/session');
 
 let index = require('./routes/index');
 
+let configHelper = require('./config/config_helper');
+
 let app = express();
 
 app.set('trust proxy', 'loopback');
 
-// uncomment after placing your favicon in /public
-//app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
+app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
 
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -59,7 +58,7 @@ app.use(function (req, res, next) {
     cookieParser(req.config.session.secret)(req, res, next);
 });
 
-app.use(sessionHandler());
+// app.use(sessionHandler());
 
 app.use('*', index);
 

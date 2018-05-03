@@ -2,7 +2,7 @@
  * 错误处理中间件
  */
 
-let os = require('os');
+let utils = require('../utils/index');
 let errCode = require('../config/error_code');
 let CONSTANT = require('../config/const');
 let _ = require('underscore');
@@ -17,9 +17,7 @@ module.exports = function (err, req, res, next) {
     res.locals.tips = err.tips || 'Oh no something\'s wrong';
     res.locals.error = isPrd ? {} : err;
 
-    req.logger.error(
-        status + ' - ' + err.stack
-    );
+    utils.storage.printLog('error', status + ' - ' + err.stack);
 
     res.status(status);
     res.format({

@@ -6,7 +6,7 @@ var Session = require('express-session');
 var SessionStore = require('connect-redis')(Session);
 
 var utils = require('../utils/index');
-let configHelper = require('../config/config_helper');
+let configHelper = require('../config/helper');
 
 function initSessionMiddleware (options) {
 

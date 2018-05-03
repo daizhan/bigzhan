@@ -18,7 +18,7 @@ let config = {
         },
         session: {
             name: 'sid',
-            secret: ''
+            secret: '0f6bd1b49de41930'
         }
     },
     production: {
@@ -27,7 +27,7 @@ let config = {
         },
         session: {
             name: 'p_sid',
-            secret: ''
+            secret: 'c333f55ac610c0e5'
         }
     },
     development: {
@@ -39,7 +39,7 @@ let config = {
         },
         session: {
             name: 'd_sid',
-            secret: ''
+            secret: 'e7184deccda6cf68'
         }
     }
 };

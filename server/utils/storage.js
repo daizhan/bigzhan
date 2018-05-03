@@ -2,10 +2,10 @@
  * storage helper
  */
 
-let configHelper = require('./config/config_helper');
 let loggerSerive = require('../service/log');
 let cacheSerive = require('../service/cache');
-let CONSTANT = require('./config/const');
+let CONSTANT = require('../config/const');
+let configHelper = require('../config/helper');
 
 function getRequestInfo (req) {
     return {req: req};
@@ -13,7 +13,15 @@ function getRequestInfo (req) {
 
 module.exports = {
 
+    printLog (level, logData, config=null, options={}) {
+        let logger = this.getLogger(config, options);
+        if (logger) {
+            logger[level](logData);
+        }
+    },
+
     getLogger (config, options) {
+        console.log(configHelper.getConfig);
         let baseConfig = configHelper.getConfig('index') || {};
         if (!config) {
             config = baseConfig.log;
@@ -23,7 +31,7 @@ module.exports = {
         if (!logger && options.useDefault) {
             logger = loggerSerive({ type: CONSTANT.log.type.console }, requestInfo);
         }
-        return null;
+        return logger;
     },
 
     getCacheClient (config, options) {
