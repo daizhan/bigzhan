@@ -48,5 +48,72 @@ module.exports = {
             }
         }
         return target;
+    },
+
+    /**
+     * 根据数据格式，转化吐出到前端页面的数据
+     */
+    filterBackData: function (data, dataFormat = null) {
+        var newData = {};
+        if (!dataFormat || !Array.isArray(dataFormat) || !dataFormat.length) {
+            return data;
+        }
+        for (let format of dataFormat) {
+            if (typeof format == 'string') {
+                if (Array.isArray(data[format])) {
+                    newData[format] = [];
+                    for (let item of data[format]) {
+                        newData[format].push(item);
+                    }
+                } else {
+                    newData[format] = data[format];
+                }
+            } else if (typeof format == 'object') {
+                let frontKey = format.name || format.frontKey;
+                let backKey = format.name || format.backKey;
+                let oriData;
+                let obj = null;
+                if (format.subKey) {
+                    oriData = data[backKey][format.subKey];
+                    obj = data[backKey];
+                } else {
+                    oriData = data[backKey];
+                    obj = data;
+                }
+                if (typeof oriData == 'undefined') {
+                    newData[frontKey] = format.default;
+                    continue;
+                }
+                if (!format.keys) {
+                    if (Array.isArray(oriData)) {
+                        newData[frontKey] = [];
+                        for (let item of oriData) {
+                            newData[frontKey].push(item);
+                            if (format.formatter) {
+                                newData[frontKey].push(format.formatter(item, obj));
+                            } else {
+                                newData[frontKey].push(item);
+                            }
+                        }
+                    } else {
+                        if (format.formatter) {
+                            newData[frontKey] = format.formatter(oriData, obj);
+                        } else {
+                            newData[frontKey] = oriData;
+                        }
+                    }
+                } else {
+                    if (Array.isArray(oriData)) {
+                        newData[frontKey] = [];
+                        for (let item of oriData) {
+                            newData[frontKey].push(this.filterBackData(item, format.keys));
+                        }
+                    } else {
+                        newData[frontKey] = this.filterBackData(oriData, format.keys);
+                    }
+                }
+            }
+        }
+        return newData;
     }
 };

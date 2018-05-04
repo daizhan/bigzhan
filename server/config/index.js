@@ -19,6 +19,16 @@ let config = {
         session: {
             name: 'sid',
             secret: '0f6bd1b49de41930'
+        },
+        csrf: {
+            enable: true,
+            header: 'CSRF',
+            checkMethod: ['post', 'get']
+        },
+        rateLimit: {
+            enable: true,
+            total: 100,
+            expire: 60 * 1000
         }
     },
     production: {
@@ -28,6 +38,9 @@ let config = {
         session: {
             name: 'p_sid',
             secret: 'c333f55ac610c0e5'
+        },
+        csrf: {
+            header: 'PRD-CSRF'
         }
     },
     development: {
@@ -40,6 +53,9 @@ let config = {
         session: {
             name: 'd_sid',
             secret: 'e7184deccda6cf68'
+        },
+        csrf: {
+            header: 'DEV-CSRF'
         }
     }
 };

@@ -37,9 +37,13 @@ CacheClient.prototype.printLog = function (type, msg) {
 };
 
 CacheClient.prototype.checkConfig = function (config) {
-    config = _.pick(config, 'host', 'port', 'password', 'retry_stratege');
+    if (config.password) {
+        config = _.pick(config, 'host', 'port', 'password', 'retry_stratege');
+    } else {
+        config = _.pick(config, 'host', 'port', 'retry_stratege');
+    }
     config = utils.collections.deepCopy(config);
-    if (config.host || config.port || config.password) {
+    if (!config.host && !config.port) {
         return null;
     }
     if (!config.retry_stratege || typeof config.retry_stratege !== 'function') {
@@ -73,31 +77,29 @@ CacheClient.prototype.getDefaultStratege = function () {
 };
 
 CacheClient.prototype.listenEvent = function (client) {
-    client.on('error', function (err) {
-        this.printLog('error', 'Error ' + err);
+    client.on('error', (err) => {
+        this.printLog('error', err);
+        CLIENT.status = STATUS.disconnected;
     });
 
-    client.on('connect', function () {
+    client.on('connect', () => {
         this.printLog('log', 'connect to server');
         CLIENT.status = STATUS.connected;
     });
 
-    client.on('reconnecting', function () {
+    client.on('reconnecting', () => {
         this.printLog('log', 'trying to reconnect to server');
-        CLIENT.status = STATUS.disconnected;
+        CLIENT.status = STATUS.connecting;
     });
 };
 
 CacheClient.prototype.createClient = function () {
-    let client = CLIENT.instance;
-    if (client && client.connected) {
-        return client;
-    } else if (CLIENT.status === STATUS.connecting) {
-        return client;
+    if (CLIENT.instance) {
+        return CLIENT.instance;
     }
-    this.quit(true);
-    CLIENT.instance = redis.createClient(this.config);
     CLIENT.status = STATUS.connecting;
+    CLIENT.instance = redis.createClient(this.config);
+    this.listenEvent(CLIENT.instance);
     return CLIENT.instance;
 };
 

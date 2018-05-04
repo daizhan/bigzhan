@@ -7,13 +7,15 @@ let time = require('./time');
 let env = require('./env');
 let collections = require('./collections');
 let escape = require('./escape');
-let storage = require('./storage');
+let argCheck = require('./arg_check');
+let secret = require('./secret');
 
 module.exports = {
+    argCheck: argCheck,
     filePath: filePath,
     time: time,
     env: env,
     collections: collections,
     escape: escape,
-    storage: storage
+    secret: secret
 };

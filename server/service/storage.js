@@ -1,5 +1,5 @@
 /**
- * storage helper
+ * storage service
  */
 
 let loggerSerive = require('../service/log');
@@ -20,8 +20,7 @@ module.exports = {
         }
     },
 
-    getLogger (config, options) {
-        console.log(configHelper.getConfig);
+    getLogger (config, options={}) {
         let baseConfig = configHelper.getConfig('index') || {};
         if (!config) {
             config = baseConfig.log;
@@ -34,7 +33,7 @@ module.exports = {
         return logger;
     },
 
-    getCacheClient (config, options) {
+    getCacheClient (config, options={}) {
         let baseConfig = configHelper.getConfig('index') || {};
         if (!config) {
             config = baseConfig.cache;

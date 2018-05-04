@@ -2,15 +2,15 @@
  * session middleware
  */
 
-var Session = require('express-session');
-var SessionStore = require('connect-redis')(Session);
+let Session = require('express-session');
+let SessionStore = require('connect-redis')(Session);
 
-var utils = require('../utils/index');
+let storageService = require('../service/storage');
 let configHelper = require('../config/helper');
 
 function initSessionMiddleware (options) {
 
-    let cacheClient = utils.storage.getCacheClient(null, {req: options.req});
+    let cacheClient = storageService.getCacheClient(null, {req: options.req});
 
     let data = {
         middleware: null,
@@ -38,7 +38,7 @@ function initSessionMiddleware (options) {
 module.exports = () => {
 
     let config = configHelper.getConfig('index');
-    let info = initSessionMiddleware({sessionName: config.session.name});
+    let info = initSessionMiddleware({sessionName: config.session.name, secret: config.session.secret});
 
     if (!info.middleware) {
         return function (req, res) {

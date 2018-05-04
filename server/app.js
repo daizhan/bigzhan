@@ -19,7 +19,7 @@ let sessionHandler = require('./middleware/session');
 
 let index = require('./routes/index');
 
-let configHelper = require('./config/config_helper');
+let configHelper = require('./config/helper');
 
 let app = express();
 
@@ -58,9 +58,9 @@ app.use(function (req, res, next) {
     cookieParser(req.config.session.secret)(req, res, next);
 });
 
-// app.use(sessionHandler());
+app.use(sessionHandler());
 
-app.use('*', index);
+app.use(require('./routes/index'));
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
