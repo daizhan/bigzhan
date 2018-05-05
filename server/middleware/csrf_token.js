@@ -2,44 +2,40 @@ let _ = require('underscore');
 let utils = require('../utils/index');
 let storageService = require('../service/storage');
 
-module.exports = function (req, res, next) {
-
-    function isInWhiteList (url, whiteList) {
-        for (var key in whiteList) {
-            if (whiteList.hasOwnProperty(key)) {
-                let reg = new RegExp('^' + whiteList[key] + '?$');
-                if (reg.test(url)) {
-                    return true;
-                }
-            }
+let tokenHelper = {
+    needCheckCsrfToken (req, config) {
+        if (!config.enable) {
+            return false;
+        } else if (config.checkMethod.indexOf(req.method.toLowerCase()) === -1) {
+            return false;
+        } else if (typeof config.validator === 'function') {
+            return config.validator(req);
         }
-        return false;
-    }
+        return true;
+    },
 
-    function createToken () {
-        return utils.secret.cryptoText('' + Date.now() + '' + Math.random() + csrfTokenConfig.salt);
-    }
+    createToken (config) {
+        return utils.secret.cryptoText('' + Date.now() + '' + Math.random() + config.salt);
+    },
 
-    function updateToken (req, token) {
+    updateToken (req, token) {
         req.session.csrfToken = token;
-    }
+    },
 
-    function sendToken (req, res, force) {
-        if (!req.session.csrfToken || !!force) {
-            let token = createToken();
-            updateToken(req, token);
-            res.append(csrfTokenConfig.header, token);
+    sendToken (req, res, config) {
+        if (!req.session.csrfToken) {
+            let token = this.createToken(config);
+            this.updateToken(req, token);
+            res.append(config.header, token);
         }
-    }
+    },
 
-    function isTokenMatch (req, token) {
-        if (!token) {
-            token = req.get(csrfTokenConfig.header);
-        }
+    isTokenMatch (req, config) {
+        let token = req.get(config.header);
         return token === req.session.csrfToken;
-    }
+    },
 
-    function filterConfig (config) {
+    filterConfig (config) {
         let defaultConfig = {
             header: 'CSRF',
             salt: '15f83bfaf57ccaf9',
@@ -52,31 +48,28 @@ module.exports = function (req, res, next) {
             _.pick.apply(_, [config].concat(Object.keys(defaultConfig)))
         );
     }
+};
 
-    let csrfTokenConfig = filterConfig(req.config.csrf);
-    let whiteList = {
-        index: '/'
-    };
+module.exports = function (config) {
 
-    if (!csrfTokenConfig.enable) {
-        next();
-        return;
-    }
-    if (isInWhiteList(req.path, whiteList)) {
-        sendToken(req, res);
-        next();
-        return;
-    }
-    if (csrfTokenConfig.checkMethod.indexOf(req.method.toLowerCase()) !== -1) {
-        if (!isTokenMatch(req)) {
-            let msg = '[Security Error] csrf token not match!';
-            storageService.printLog('error', msg, null, {req: req});
-            res.status(403);
-            res.send(msg);
-            return;
+    config = utils.collections.deepCopy(config);
+
+    return (req, res, next) => {
+        let csrfConfig = tokenHelper.filterConfig(config);
+
+        if (tokenHelper.needCheckCsrfToken(req, csrfConfig)) {
+            if (!tokenHelper.isTokenMatch(req, csrfConfig)) {
+                if (typeof config.callback === 'function') {
+                    return config.callback(req, res, csrfConfig);
+                } else {
+                    let msg = '[Security Error] csrf token not match!';
+                    storageService.printLog('error', msg, null, {req: req});
+                    return res.status(403).send(msg);
+                }
+            }
         }
-    }
 
-    next();
-
+        tokenHelper.sendToken(req, res);
+        next();
+    };
 };

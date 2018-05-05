@@ -24,6 +24,8 @@ let config = {
             enable: true,
             header: 'CSRF',
             checkMethod: ['post', 'get']
+            // validator: () => {},
+            // callback: () => {}
         },
         rateLimit: {
             enable: true,

@@ -1,4 +1,5 @@
 let _ = require('underscore');
+let utils = require('../utils/index');
 let storageService = require('../service/storage');
 let configHelper = require('../config/helper');
 let baseConfig = configHelper.getConfig('index');
@@ -51,6 +52,7 @@ var Helper = {
             return method;
         }
     },
+
     concatUrl: function (...urls) {
         var urlPart = [];
         for (let url of urls) {
@@ -61,6 +63,7 @@ var Helper = {
         }
         return '/' + urlPart.join('/');
     },
+
     checkRateLimiter: function (router, options) {
         let limiter = this.createRateLimiter(router);
         if (!limiter) {
@@ -87,6 +90,40 @@ var Helper = {
         }
         return null;
     },
+
+    createRateLimiter: function (router) {
+        if (typeof this.limiter !== 'undefined') { // 定义过
+            return this.limiter;
+        }
+        if (!baseConfig.rateLimit || !baseConfig.rateLimit.enable) {
+            this.limiter = null;
+            return this.limiter;
+        }
+        let cacheClient = storageService.getCacheClient();
+        if (cacheClient) {
+            this.limiter = require('../middleware/rate_limit')(router, cacheClient);
+        } else {
+            this.limiter = null;
+        }
+        return this.limiter;
+    },
+
+    getCsrfChecker (options) {
+        let config = utils.collections.deepCopy(baseConfig.csrf || {});
+        config = utils.collections.extend({}, config, options.csrf || {});
+        if (config.enable) {
+            return require('../middleware/csrf_token')(config);
+        }
+        return null;
+    },
+
+    getOtherMiddlewares (router, options) {
+        let middlewares = [];
+        middlewares.push(this.checkRateLimiter(router, options));
+        middlewares.push(this.getCsrfChecker(options));
+        return middlewares;
+    },
+
     mergeCallback: function (handlers, ...middlewares) {
         let callbacks = [];
         for (let item of middlewares) {
@@ -107,22 +144,6 @@ var Helper = {
             }
         }
         return callbacks;
-    },
-    createRateLimiter: function (router) {
-        if (typeof this.limiter !== 'undefined') { // 定义过
-            return this.limiter;
-        }
-        if (!baseConfig.rateLimit || !baseConfig.rateLimit.enable) {
-            this.limiter = null;
-            return this.limiter;
-        }
-        let cacheClient = storageService.getCacheClient();
-        if (cacheClient) {
-            this.limiter = require('../middleware/rate_limit')(router, cacheClient);
-        } else {
-            this.limiter = null;
-        }
-        return this.limiter;
     },
 
     getCallbackType (callback) {
@@ -257,9 +278,8 @@ let HelperApi = {
                 currentCallbacks = Helper.getCurrentCallback(item.callback);
             }
             if (currentCallbacks.length) {
-                let rateLimiter = Helper.checkRateLimiter(router, item.options);
                 allCallbacks = Helper.getAllCallback(currentCallbacks, inheritParentCallbacks);
-                router[method](url, Helper.mergeCallback(allCallbacks, rateLimiter));
+                router[method](url, Helper.mergeCallback(allCallbacks, Helper.getOtherMiddlewares(router, item.options)));
             } else {
                 allCallbacks = inheritParentCallbacks;
             }
@@ -282,6 +302,7 @@ let HelperApi = {
      *      rateLimit.expire   时间范围，单位ms
      *      excludeList        不需要继承的中间件，string or array
      *      inheritList        需要继承的中间件，string or array
+     *      csrf               控制csrf检查，object
      */
     route: function (reg, method, children, callback, options={}) {
         return {

@@ -2,8 +2,8 @@
  * demo for test handler
  */
 
-let BaseHandler = require('./base');
-let utils = require('../utils/index');
+let BaseHandler = require('../base');
+let utils = require('../../utils/index');
 
 let staticProps = {};
 
