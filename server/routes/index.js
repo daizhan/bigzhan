@@ -10,7 +10,7 @@ function handler (req, res) {
     });
 }
 
-let routeOption = { rateLimit: { enable: false } };
+let routeOption = { rateLimit: { enable: false }, csrf: { enable: false, needSend: true } };
 let routeList = [
     helper.route('/', 'get', appRoute, handler, routeOption)
 ];

@@ -23,16 +23,26 @@ let tokenHelper = {
     },
 
     sendToken (req, res, config) {
-        if (!req.session.csrfToken) {
-            let token = this.createToken(config);
+        let token = req.session.csrfToken;
+        if (!token) {
+            token = this.createToken(config);
             this.updateToken(req, token);
+        }
+        let headerToken = req.get(config.header);
+        let cookieToken = req.signedCookies[config.header];
+        if (!headerToken) {
             res.append(config.header, token);
+        }
+        if (!cookieToken) {
+            res.cookie(config.header, token, { path: '/', signed: true, httpOnly: true });
         }
     },
 
     isTokenMatch (req, config) {
-        let token = req.get(config.header);
-        return token === req.session.csrfToken;
+        let targetToken = req.session.csrfToken;
+        let headerToken = req.get(config.header);
+        let cookieToken = req.signedCookies[config.header];
+        return headerToken === targetToken || cookieToken === targetToken;
     },
 
     filterConfig (config) {
@@ -40,7 +50,10 @@ let tokenHelper = {
             header: 'CSRF',
             salt: '15f83bfaf57ccaf9',
             checkMethod: ['post'],
-            enable: true
+            enable: true,
+            needSend: false,
+            validator: null,
+            callback: null
         };
         config = config || {};
         return _.extend({},
@@ -69,7 +82,9 @@ module.exports = function (config) {
             }
         }
 
-        tokenHelper.sendToken(req, res);
+        if (csrfConfig.needSend) {
+            tokenHelper.sendToken(req, res, csrfConfig);
+        }
         next();
     };
 };

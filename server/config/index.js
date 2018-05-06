@@ -23,7 +23,8 @@ let config = {
         csrf: {
             enable: true,
             header: 'CSRF',
-            checkMethod: ['post', 'get']
+            checkMethod: ['post', 'get'],
+            needSend: false,
             // validator: () => {},
             // callback: () => {}
         },

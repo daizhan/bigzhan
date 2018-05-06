@@ -111,10 +111,7 @@ var Helper = {
     getCsrfChecker (options) {
         let config = utils.collections.deepCopy(baseConfig.csrf || {});
         config = utils.collections.extend({}, config, options.csrf || {});
-        if (config.enable) {
-            return require('../middleware/csrf_token')(config);
-        }
-        return null;
+        return require('../middleware/csrf_token')(config);
     },
 
     getOtherMiddlewares (router, options) {
@@ -279,7 +276,7 @@ let HelperApi = {
             }
             if (currentCallbacks.length) {
                 allCallbacks = Helper.getAllCallback(currentCallbacks, inheritParentCallbacks);
-                router[method](url, Helper.mergeCallback(allCallbacks, Helper.getOtherMiddlewares(router, item.options)));
+                router[method](url, Helper.mergeCallback(allCallbacks, ...Helper.getOtherMiddlewares(router, item.options)));
             } else {
                 allCallbacks = inheritParentCallbacks;
             }

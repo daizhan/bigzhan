@@ -98,15 +98,15 @@ BaseHandler.prototype.action = function (actionName) {
             actionName: actionName
         });
         if (!handler) {  // 接口不支持
-            return res.error('API_NOT_FOUND');
+            return res.error('REQ_API_NOT_FOUND');
         }
         let argResult = handler.checkArgs();
         if (argResult && argResult.error) {
-            return res.error('ARG_ERROR', {msg: argResult.error});
+            return res.error('REQ_ARG_ERROR', {msg: argResult.error});
         }
         let data = handler.getData(argResult.args);
         if (!data) {
-            return res.error('UNSUPPORTED_API');
+            return res.error('REQ_UNSUPPORTED_API');
         }
         if (data) {
             if (data.isEnd) {  // getData 方法自行处理返回
