@@ -2,8 +2,9 @@
  * storage service
  */
 
-let loggerSerive = require('../service/log');
-let cacheSerive = require('../service/cache');
+let loggerSerive = require('./log');
+let cacheSerive = require('./cache');
+let mysqlSerive = require('./mysql');
 let CONSTANT = require('../config/const');
 let configHelper = require('../config/helper');
 
@@ -43,5 +44,17 @@ module.exports = {
         }
         let cache = new cacheSerive(config);
         return cache.getClient();
+    },
+
+    getMysqlClient (config, options={}) {
+        let baseConfig = configHelper.getConfig('index') || {};
+        if (!config) {
+            config = baseConfig.mysql;
+        }
+        if (!config.logger) {
+            config.logger = this.getLogger(null, {req: options.req});
+        }
+        let mysql = new mysqlSerive(config);
+        return mysql.getConnection();
     }
 };

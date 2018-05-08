@@ -9,7 +9,7 @@ let moduleHandler = BaseHandler.extend();
 let testHandler = new moduleHandler({moduleName: 'test'});
 
 let apiList = [
-    'detail'
+    'detail', 'mysql'
 ];
 
 module.exports = (function () {

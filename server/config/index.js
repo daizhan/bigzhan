@@ -28,6 +28,13 @@ let config = {
             // validator: () => {},
             // callback: () => {}
         },
+        mysql: {
+            host: 'localhost',
+            port: '3306',
+            user: '',
+            password: '',
+            database: ''
+        },
         rateLimit: {
             enable: true,
             total: 100,

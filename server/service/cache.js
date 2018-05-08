@@ -43,7 +43,7 @@ CacheClient.prototype.checkConfig = function (config) {
         config = _.pick(config, 'host', 'port', 'retry_stratege');
     }
     config = utils.collections.deepCopy(config);
-    if (!config.host && !config.port) {
+    if (!config.host || !config.port) {
         return null;
     }
     if (!config.retry_stratege || typeof config.retry_stratege !== 'function') {
