@@ -28,11 +28,25 @@ let protoProps = {
     ],
     getData (args) {
         let db = storage.getMysqlClient();
-        db.query('select * from `user` where `name` = ?', [args.name], (error, results, fields) => {
-            db.end();
+        let count = 0;
+        let dbData = [];
+        let callback = (error, results, fields) => {
             let data = {name: args.name, error: error, results: results};
-            this.res.send(data);
-        });
+            dbData.push(JSON.stringify(data));
+            count += 1;
+            if (count >= 9) {
+                this.res.send(dbData.join('<br />'));
+            }
+        };
+        db.query('select * from `user` where `name` = ?', [args.name], callback);
+        db.query('select * from `user` where `name` = ?', [args.name], callback);
+        db.query('select * from `user` where `name` = ?', [args.name], callback);
+        db.query('select * from `user` where `name` = ?', [args.name], callback);
+        db.query('select * from `user` where `name` = ?', [args.name], callback);
+        db.query('select * from `user` where `name` = ?', [args.name], callback);
+        db.query('select * from `user` where `name` = ?', [args.name], callback);
+        db.query('select * from `user` where `name` = ?', [args.name], callback);
+        this.req.dbClient.query('select * from `user` where `name` = ?', [args.name], callback);
         return {isEnd: true};
     },
 

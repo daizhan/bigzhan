@@ -7,6 +7,7 @@ let redis = require('redis');
 let utils = require('../utils/index');
 
 function CacheClient (config) {
+    this.status = STATUS.disconnected;
     this.client = null;
     let targetConfig = this.checkConfig(config);
     if (targetConfig) {
@@ -21,12 +22,6 @@ let STATUS = {
     connecting: 'connecting',
     connected: 'connected'
 };
-
-let CLIENT = {
-    instance: null,
-    status: STATUS.disconnected
-};
-
 
 CacheClient.prototype.printLog = function (type, msg) {
     if (this.config.logger) {
@@ -79,45 +74,43 @@ CacheClient.prototype.getDefaultStratege = function () {
 CacheClient.prototype.listenEvent = function (client) {
     client.on('error', (err) => {
         this.printLog('error', err);
-        CLIENT.status = STATUS.disconnected;
+        this.status = STATUS.disconnected;
     });
 
     client.on('connect', () => {
         this.printLog('log', 'connect to server');
-        CLIENT.status = STATUS.connected;
+        this.status = STATUS.connected;
     });
 
     client.on('reconnecting', () => {
         this.printLog('log', 'trying to reconnect to server');
-        CLIENT.status = STATUS.connecting;
+        this.status = STATUS.connecting;
     });
 };
 
 CacheClient.prototype.createClient = function () {
-    if (CLIENT.instance) {
-        return CLIENT.instance;
+    if (this.client) {
+        return this.client;
     }
-    CLIENT.status = STATUS.connecting;
-    CLIENT.instance = redis.createClient(this.config);
-    this.listenEvent(CLIENT.instance);
-    return CLIENT.instance;
+    this.status = STATUS.connecting;
+    this.client = redis.createClient(this.config);
+    this.listenEvent(this.client);
+    return this.client;
 };
 
 CacheClient.prototype.getClient = function () {
-    let client = CLIENT.instance;
-    if (client && client.connected) {
-        return client;
+    if (this.client && this.client.connected) {
+        return this.client;
     }
     return this.createClient(this.config);
 };
 
 CacheClient.prototype.quit = function (force=false) {
-    let client = CLIENT.instance;
-    if (client) {
+    if (this.client) {
         if (force) {
-            client.end(true);
+            this.client.end(true);
         } else {
-            client.quit();
+            this.client.quit();
         }
     }
 };

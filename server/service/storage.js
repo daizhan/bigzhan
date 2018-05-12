@@ -12,6 +12,21 @@ function getRequestInfo (req) {
     return {req: req};
 }
 
+let cacheClient = {};
+let dbClient = {};
+
+function getCacheKey (config) {
+    return `${config.host}-${config.port}-${config.password}`;
+}
+
+function getDbKey (config) {
+    let key = `${config.host}-${config.port}-${config.user}-${config.password}-${config.database}`;
+    if (config.pool && config.pool.enable) {
+        key += '-pool';
+    }
+    return key;
+}
+
 module.exports = {
 
     printLog (level, logData, config=null, options={}) {
@@ -42,7 +57,14 @@ module.exports = {
         if (!config.logger) {
             config.logger = this.getLogger(null, {req: options.req});
         }
-        let cache = new cacheSerive(config);
+        let cache;
+        let key = getCacheKey(config);
+        if (!options.new && cacheClient[key]) {
+            cache = cacheClient[key];
+        } else {
+            cache = new cacheSerive(config);
+            cacheClient[key] = cache;
+        }
         return cache.getClient();
     },
 
@@ -54,7 +76,14 @@ module.exports = {
         if (!config.logger) {
             config.logger = this.getLogger(null, {req: options.req});
         }
-        let mysql = new mysqlSerive(config);
+        let mysql;
+        let key = getDbKey(config);
+        if (!options.new && dbClient[key]) {
+            mysql = dbClient[key];
+        } else {
+            mysql = new mysqlSerive(config);
+        }
+        dbClient[key] = mysql;
         return mysql.getConnection();
     }
 };

@@ -33,7 +33,12 @@ let config = {
             port: '3306',
             user: '',
             password: '',
-            database: ''
+            database: '',
+            debug: false,
+            pool: {
+                enable: true,
+                connectionLimit: 100
+            }
         },
         rateLimit: {
             enable: true,

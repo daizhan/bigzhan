@@ -17,9 +17,9 @@ let errorHandler = require('./middleware/error');
 
 let sessionHandler = require('./middleware/session');
 
-let index = require('./routes/index');
-
 let configHelper = require('./config/helper');
+
+let storageService = require('./service/storage');
 
 let app = express();
 
@@ -48,6 +48,20 @@ app.use(accessLogger);
 
 // response middlerware
 app.use(responseHelper);
+
+// init cache
+let cacheClient = storageService.getCacheClient();
+app.use((req, res, next) => {
+    req.cacheClient = cacheClient;
+    next();
+});
+
+// init db
+let dbClient = storageService.getMysqlClient();
+app.use((req, res, next) => {
+    req.dbClient = dbClient;
+    next();
+});
 
 // 处理body
 app.use(bodyParser.json());
